@@ -1,12 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { formatFileName, formatFileSize } from "./fileDisplay";
 import UploadStepper from "./UploadStepper";
 
 export default function FilePicker() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  function removeSelectedFile() {
+  const input = fileInputRef.current;
+
+  if (input) {
+    input.value = "";
+    input.focus();
+  }
+
+  setSelectedFile(null);
+}
   return (
     <section className="rounded-2xl border border-neutral-200 bg-surface p-4 tracking-normal normal-case shadow-sm sm:p-6">
       <UploadStepper currentStep="Choose file" />
@@ -45,6 +56,7 @@ export default function FilePicker() {
           <input
             id="file"
             type="file"
+            ref={fileInputRef}
             aria-describedby="file-picker-hint"
             className="absolute inset-0 size-full cursor-pointer opacity-0"
             onChange={(event) => {
@@ -53,9 +65,21 @@ export default function FilePicker() {
           />
         </label>
       </div>
-      <p id="file-picker-hint" className="mt-3 text-sm text-muted">
-        One file per link
-      </p>
+      <div className="mt-3 flex items-center justify-between gap-3">
+        <p id="file-picker-hint" className="text-sm text-muted">
+          One file per link
+        </p>
+
+        {selectedFile && (
+          <button
+            type="button"
+            onClick={removeSelectedFile}
+            className="min-h-11 rounded-md px-2 text-sm font-medium text-muted underline underline-offset-4 hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2"
+          >
+            Remove file
+          </button>
+        )}
+      </div>
     </section>
   );
 }
