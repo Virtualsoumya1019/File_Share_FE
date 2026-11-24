@@ -2,76 +2,14 @@
 
 import { useState } from "react";
 
-const uploadSteps = ["Choose file", "Set expiry", "Upload", "Share link"];
-const currentStep = "Choose file";
-
-const fileSizeFormatter = new Intl.NumberFormat(undefined, {
-  maximumFractionDigits: 1,
-});
-
-const screenshotDateFormatter = new Intl.DateTimeFormat(undefined, {
-  month: "short",
-  day: "numeric",
-  timeZone: "UTC",
-});
-
-function formatFileName(name: string) {
-  const screenshot = /^Screenshot (\d{4}-\d{2}-\d{2}) at (\d{1,2})\.(\d{2})\.\d{2}\s*([AP]M)\.(png|jpe?g)$/i.exec(name);
-  if (!screenshot) return name;
-
-  const [, date, hour, minute, period, extension] = screenshot;
-  const timestamp = Date.parse(date);
-  if (!Number.isFinite(timestamp)) return name;
-
-  return `Screenshot · ${screenshotDateFormatter.format(timestamp)} · ${hour}:${minute} ${period.toUpperCase()} · ${extension.toUpperCase()}`;
-}
-
-function formatFileSize(bytes: number) {
-  if (bytes >= 1_000_000_000) return `${fileSizeFormatter.format(bytes / 1_000_000_000)} GB`;
-  if (bytes >= 1_000_000) return `${fileSizeFormatter.format(bytes / 1_000_000)} MB`;
-  if (bytes >= 1_000) return `${fileSizeFormatter.format(bytes / 1_000)} KB`;
-  return `${bytes} ${bytes === 1 ? "byte" : "bytes"}`;
-}
+import { formatFileName, formatFileSize } from "./fileDisplay";
+import UploadStepper from "./UploadStepper";
 
 export default function FilePicker() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   return (
     <section className="rounded-2xl border border-neutral-200 bg-surface p-4 tracking-normal normal-case shadow-sm sm:p-6">
-      <ol
-        aria-label="File sharing steps"
-        className="relative mb-5 grid grid-cols-4 rounded-xl border border-neutral-200 bg-neutral-50 px-1 pt-8 pb-4 before:pointer-events-none before:absolute before:inset-x-[13%] before:top-12 before:border-t before:border-neutral-300 before:content-[''] sm:px-2"
-      >
-        {uploadSteps.map((step, index) => {
-          const isCurrent = step === currentStep;
-
-          return (
-            <li
-              key={step}
-              aria-current={isCurrent ? "step" : undefined}
-              className="relative flex min-w-0 flex-col items-center gap-2 px-1 text-center text-xs leading-tight text-muted aria-[current=step]:font-semibold aria-[current=step]:text-primary"
-            >
-              <span
-                aria-hidden="true"
-                className={`relative grid size-8 shrink-0 place-items-center rounded-full border font-semibold tabular-nums ${isCurrent ? "-translate-y-2 scale-125 border-primary bg-primary text-white ring-2 ring-neutral-400 ring-offset-2 shadow-[0_5px_8px_#0005]" : "border-neutral-300 bg-surface text-muted"}`}
-              >
-                {isCurrent && (
-                  <span className="pointer-events-none absolute -inset-1 rounded-full border-2 border-primary opacity-0 motion-safe:animate-[file-step-pulse_1.5s_ease-out_3]" />
-                )}
-                {index + 1}
-              </span>
-              {step}
-              {isCurrent && (
-                <span
-                  aria-hidden="true"
-                  className="text-[10px] font-medium text-muted"
-                >
-                  Current step
-                </span>
-              )}
-            </li>
-          );
-        })}
-      </ol>
+      <UploadStepper currentStep="Choose file" />
       <div className="group flex flex-col items-stretch gap-3 rounded-xl border border-neutral-200 bg-neutral-50 p-3 transition-colors hover:border-neutral-400 focus-within:border-neutral-400 min-[420px]:flex-row min-[420px]:items-center min-[420px]:justify-between">
         <div className="flex min-w-0 items-center gap-3 text-sm text-muted">
           <span
